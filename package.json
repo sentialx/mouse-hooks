@@ -1,0 +1,44 @@
+{
+  "name": "mouse-hooks",
+  "version": "0.1.0",
+  "description": "Global mouse events listener for Node.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "build-win32": "node-gyp rebuild",
+    "prepare": "npm run build",
+    "install": "node install.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sentialx/mouse-hooks.git"
+  },
+  "keywords": [
+    "mouse-hooks",
+    "native",
+    "macos",
+    "linux",
+    "windows"
+  ],
+  "author": "sentialx",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sentialx/mouse-hooks/issues"
+  },
+  "homepage": "https://github.com/sentialx/mouse-hooks#readme",
+  "dependencies": {
+    "@types/node": "10.7.1",
+    "bindings": "1.4.0",
+    "node-gyp": "3.8.0",
+    "typescript": "3.0.1"
+  },
+  "files": [
+    "mouse.js",
+    "lib/",
+    "dist/",
+    "binding.gyp",
+    "install.js"
+  ]
+}
