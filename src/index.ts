@@ -1,5 +1,6 @@
 import { EventEmitter } from "events";
 import { fork, ChildProcess } from "child_process";
+import { join } from 'path';
 
 let registeredEvents: string[] = [];
 
@@ -13,7 +14,7 @@ class MouseEvents extends EventEmitter {
       if (registeredEvents.indexOf(event) !== -1) return;
 
       if (event === "mouse-up" && !mouseProcess) {
-        mouseProcess = fork("./mouse.js");
+        mouseProcess = fork(join(__dirname, "../mouse.js"));
 
         mouseProcess.on("message", msg => {
           if (msg === "mouse-up") {
