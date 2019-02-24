@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import { fork, ChildProcess } from "child_process";
-import { join } from 'path';
+import { join } from "path";
 
 let registeredEvents: string[] = [];
 
@@ -13,13 +13,11 @@ class MouseEvents extends EventEmitter {
     this.on("newListener", event => {
       if (registeredEvents.indexOf(event) !== -1) return;
 
-      if (event === "mouse-up" && !mouseProcess) {
+      if ((event === "mouse-up" || event === "mouse-down") && !mouseProcess) {
         mouseProcess = fork(join(__dirname, "../mouse.js"));
 
         mouseProcess.on("message", msg => {
-          if (msg === "mouse-up") {
-            this.emit("mouse-up");
-          }
+          this.emit(msg.event, { x: msg.x, y: msg.y, button: msg.button });
         });
       } else {
         return;
@@ -31,7 +29,7 @@ class MouseEvents extends EventEmitter {
     this.on("removeListener", event => {
       if (this.listenerCount(event) > 0) return;
 
-      if (event === "mouse-up" && mouseProcess) {
+      if ((event === "mouse-up" || event === "mouse-down") && mouseProcess) {
         mouseProcess.kill();
       }
 

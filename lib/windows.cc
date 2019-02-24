@@ -15,10 +15,36 @@ LRESULT CALLBACK HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
   if (nCode >= 0)
   {
-    if (wParam == WM_LBUTTONUP)
+    MSLLHOOKSTRUCT *data = (MSLLHOOKSTRUCT *)lParam;
+
+    auto x = v8::Number::New(_isolate, data->pt.x);
+    auto y = v8::Number::New(_isolate, data->pt.y);
+
+    auto name = "";
+    auto which = "";
+
+    if (wParam == WM_LBUTTONUP || wParam == WM_LBUTTONDOWN)
     {
-      v8::Local<v8::Value> argv[1] = {v8::String::NewFromUtf8(_isolate, "mouse-up", v8::NewStringType::kNormal).ToLocalChecked()};
-      _cb->Call(v8::Null(_isolate), 1, argv);
+      which = "mouse1";
+    }
+    else if (wParam == WM_RBUTTONUP || wParam == WM_RBUTTONDOWN)
+    {
+      which = "mouse2";
+    }
+
+    if (wParam == WM_LBUTTONUP || wParam == WM_RBUTTONUP)
+    {
+      name = "mouse-up";
+    }
+    else if (wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN)
+    {
+      name = "mouse-down";
+    }
+
+    if (name != "")
+    {
+      v8::Local<v8::Value> argv[4] = {v8::String::NewFromUtf8(_isolate, name), x, y, v8::String::NewFromUtf8(_isolate, which)};
+      _cb->Call(v8::Null(_isolate), 4, argv);
     }
   }
 
