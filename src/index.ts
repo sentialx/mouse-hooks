@@ -1,6 +1,7 @@
 import { EventEmitter } from "events";
 import { fork, ChildProcess } from "child_process";
 import { join } from "path";
+import { platform } from "os";
 
 let registeredEvents: string[] = [];
 
@@ -9,6 +10,8 @@ let mouseProcess: ChildProcess;
 class MouseEvents extends EventEmitter {
   constructor() {
     super();
+
+    if (platform() !== 'win32') return;
 
     this.on("newListener", event => {
       if (registeredEvents.indexOf(event) !== -1) return;
