@@ -1,24 +1,21 @@
-#include <node.h>
+#include <napi.h>
 #include <windows.h>
 #include <string>
 
-void throwError(v8::Isolate *isolate, const char *error)
-{
-  isolate->ThrowException(v8::Exception::TypeError(v8::String::NewFromUtf8(isolate, error)));
-}
+Napi::CallbackInfo *_info;
 
-v8::Local<v8::Function> _cb;
-v8::Isolate *_isolate;
 HHOOK _hook;
 
 LRESULT CALLBACK HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 {
+  auto cb = (*_info)[0].As<Napi::Function>();
+
   if (nCode >= 0)
   {
     MSLLHOOKSTRUCT *data = (MSLLHOOKSTRUCT *)lParam;
 
-    auto x = v8::Number::New(_isolate, data->pt.x);
-    auto y = v8::Number::New(_isolate, data->pt.y);
+    auto x = Napi::Number::New((*_info).Env(), data->pt.x);
+    auto y = Napi::Number::New((*_info).Env(), data->pt.y);
 
     auto name = "";
     auto which = "";
@@ -43,20 +40,16 @@ LRESULT CALLBACK HookCallback(int nCode, WPARAM wParam, LPARAM lParam)
 
     if (name != "")
     {
-      v8::Local<v8::Value> argv[4] = {v8::String::NewFromUtf8(_isolate, name), x, y, v8::String::NewFromUtf8(_isolate, which)};
-      _cb->Call(v8::Null(_isolate), 4, argv);
+      cb.Call((*_info).Env().Global(), {Napi::String::New((*_info).Env(), name), x, y, Napi::String::New((*_info).Env(), which)});
     }
   }
 
   return CallNextHookEx(_hook, nCode, wParam, lParam);
 }
 
-void createMouseHook(const v8::FunctionCallbackInfo<v8::Value> &args)
+Napi::Boolean createMouseHook(const Napi::CallbackInfo &info)
 {
-  v8::Isolate *isolate = args.GetIsolate();
-  _isolate = isolate;
-
-  _cb = v8::Local<v8::Function>::Cast(args[0]);
+  _info = &(const_cast<Napi::CallbackInfo &>(info));
 
   _hook = SetWindowsHookEx(WH_MOUSE_LL, HookCallback, NULL, 0);
 
@@ -66,11 +59,15 @@ void createMouseHook(const v8::FunctionCallbackInfo<v8::Value> &args)
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
+
+  return Napi::Boolean::New(info.Env(), true);
 }
 
-void Initialize(v8::Local<v8::Object> exports)
+Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
-  NODE_SET_METHOD(exports, "createMouseHook", createMouseHook);
+  exports.Set(Napi::String::New(env, "createMouseHook"), Napi::Function::New(env, createMouseHook));
+
+  return exports;
 }
 
-NODE_MODULE(windows_mouse_hooks, Initialize);
+NODE_API_MODULE(addon, Init)
