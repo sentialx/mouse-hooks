@@ -11,12 +11,17 @@ class MouseEvents extends EventEmitter {
   constructor() {
     super();
 
-    if (platform() !== 'win32') return;
+    if (platform() !== "win32") return;
 
     this.on("newListener", event => {
       if (registeredEvents.indexOf(event) !== -1) return;
 
-      if ((event === "mouse-up" || event === "mouse-down") && !mouseProcess) {
+      if (
+        (event === "mouse-up" ||
+          event === "mouse-down" ||
+          event === "mouse-move") &&
+        !mouseProcess
+      ) {
         mouseProcess = fork(join(__dirname, "../mouse.js"));
 
         mouseProcess.on("message", msg => {
@@ -32,7 +37,12 @@ class MouseEvents extends EventEmitter {
     this.on("removeListener", event => {
       if (this.listenerCount(event) > 0) return;
 
-      if ((event === "mouse-up" || event === "mouse-down") && mouseProcess) {
+      if (
+        (event === "mouse-up" ||
+          event === "mouse-down" ||
+          event === "mouse-move") &&
+        mouseProcess
+      ) {
         mouseProcess.kill();
       }
 
