@@ -9,7 +9,7 @@
     "watch": "tsc --watch",
     "rebuild": "node-gyp rebuild",
     "prepublishOnly": "npm run build",
-    "install": "node install.js"
+    "install": "npm run rebuild"
   },
   "repository": {
     "type": "git",
